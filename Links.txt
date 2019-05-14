@@ -1,0 +1,2 @@
+https://machinelearningmastery.com/how-to-develop-machine-learning-models-for-multivariate-multi-step-air-pollution-time-series-forecasting/
+https://towardsdatascience.com/understanding-panel-data-regression-c24cd6c5151e
