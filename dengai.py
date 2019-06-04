@@ -1,9 +1,11 @@
-#import utils
+import utils
 import preprocessing
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn import linear_model
+from sklearn import tree
+from sklearn import metrics
 
 training_features_path = './data/dengue_features_train.csv'
 training_labels_path = './data/dengue_labels_train.csv'
@@ -44,10 +46,18 @@ X_train_p, _ = preprocessing.preprocess(X_train, X_train, method = method, norma
 y_test_p, _ = preprocessing.preprocess(y_test, y_train, method = method, normalize = normalize)
 X_test_p, _ = preprocessing.preprocess(X_test, X_train, method = method, normalize = normalize)
 
-model = linear_model.LinearRegression()
+#ts = statsmodels.tsa.seasonal.seasonal_decompose(y_test_p, freq = 52)
+#ts.plot()
+#plt.show()
+
+#model = linear_model.LinearRegression()
+model = tree.DecisionTreeRegressor()
 model.fit(X_train_p, y_train_p)
 
 y_hat = model.predict(X_test_p)
+y_hat[y_hat < 0] = 0
+#y_hat = utils.moving_average(y_hat, 9)
+#y_test_p = y_test_p[4:-4]
 
 plt.subplot(1, 2, 1)
 plt.plot(np.array(y_train_p), 'ob', label = 'actual')
@@ -57,7 +67,7 @@ plt.subplot(1, 2, 2)
 plt.plot(np.array(y_test_p), 'ob', label = 'actual')
 plt.plot(y_hat, '^r', label = 'predicted')
 
-plt.title(r'R$^2:$ {} | Method: {} | Normalize: {}'.format(str(model.score(X_test_p, y_test_p)), str(method), str(normalize)))
+plt.title('MAE: {} | Method: {} | Normalize: {}'.format(str(metrics.mean_absolute_error(y_test_p, y_hat)), str(method), str(normalize)))
 
 plt.legend(loc='upper right')
 
