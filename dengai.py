@@ -3,9 +3,7 @@ import preprocessing
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn import linear_model
-from sklearn import tree
-from sklearn import metrics
+from sklearn import ensemble, metrics
 
 training_features_path = './data/dengue_features_train.csv'
 training_labels_path = './data/dengue_labels_train.csv'
@@ -37,8 +35,8 @@ X_train = sj_frame.iloc[:int(ratio*n), 1:-1]
 y_test = sj_frame.iloc[int(ratio*n):, -1].to_frame()
 X_test = sj_frame.iloc[int(ratio*n):, 1:-1]
 
-method = 'mean'
-normalize = True
+method = 'median'
+normalize = False
 
 y_train_p, _ = preprocessing.preprocess(y_train, y_train, method = method, normalize = normalize)
 X_train_p, _ = preprocessing.preprocess(X_train, X_train, method = method, normalize = normalize)
@@ -46,28 +44,24 @@ X_train_p, _ = preprocessing.preprocess(X_train, X_train, method = method, norma
 y_test_p, _ = preprocessing.preprocess(y_test, y_train, method = method, normalize = normalize)
 X_test_p, _ = preprocessing.preprocess(X_test, X_train, method = method, normalize = normalize)
 
-#ts = statsmodels.tsa.seasonal.seasonal_decompose(y_test_p, freq = 52)
-#ts.plot()
-#plt.show()
-
-#model = linear_model.LinearRegression()
-model = tree.DecisionTreeRegressor()
+model = ensemble.RandomForestRegressor(n_estimators = 50)
 model.fit(X_train_p, y_train_p)
 
-y_hat = model.predict(X_test_p)
-y_hat[y_hat < 0] = 0
-#y_hat = utils.moving_average(y_hat, 9)
-#y_test_p = y_test_p[4:-4]
+y_train_hat = model.predict(X_train_p)
+y_test_hat = model.predict(X_test_p)
 
+plt.figure(figsize=(16,9/2))
 plt.subplot(1, 2, 1)
 plt.plot(np.array(y_train_p), 'ob', label = 'actual')
+plt.plot(np.array(y_train_hat), '^r', label = 'predicted')
+
 
 plt.subplot(1, 2, 2)
 
 plt.plot(np.array(y_test_p), 'ob', label = 'actual')
-plt.plot(y_hat, '^r', label = 'predicted')
+plt.plot(y_test_hat, '^r', label = 'predicted')
 
-plt.title('MAE: {} | Method: {} | Normalize: {}'.format(str(metrics.mean_absolute_error(y_test_p, y_hat)), str(method), str(normalize)))
+plt.title('MAE: {} | Method: {} | Normalize: {}'.format(str(metrics.mean_absolute_error(y_test_p, y_test_hat)), str(method), str(normalize)))
 
 plt.legend(loc='upper right')
 
